@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from os.path import join
+from random import shuffle
+
 
 
 COURSES_XML_URL = 'https://www.coursera.org/sitemap~www~courses.xml'
@@ -14,6 +16,7 @@ def get_courses_list():
     xml_page = requests.get(COURSES_XML_URL)
     root = etree.fromstring(xml_page.content)
     links = [link.text for link in root.iter('{*}loc')]
+    shuffle(links)
     return links[:QUANTITY_COURSES_TO_OUTPUT]
 
 
@@ -65,7 +68,7 @@ def output_courses_info_to_xlsx(filepath, links):
 
 if __name__ == '__main__':
     links = get_courses_list()
-    filepath = ''
+    filepath = input('Enter filepath to directory: \n')
     output_courses_info_to_xlsx(filepath, links)
-
+    print('Done!')
 
