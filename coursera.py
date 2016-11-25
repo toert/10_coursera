@@ -7,7 +7,6 @@ from os.path import join
 from random import shuffle
 
 
-
 COURSES_XML_URL = 'https://www.coursera.org/sitemap~www~courses.xml'
 QUANTITY_COURSES_TO_OUTPUT = 20
 
@@ -38,7 +37,7 @@ def get_datetime_course(soup):
 
 
 def get_course_info(course_url):
-    page = requests.get(course_url).text.encode('utf-8')
+    page = requests.get(course_url).content
     soup = BeautifulSoup(page,'html.parser')
     course_name = soup.find('div', {'class':'title display-3-text'}).text
     course_lang = soup.find('div', {'class': 'language-info'}).text
@@ -69,6 +68,7 @@ def output_courses_info_to_xlsx(filepath, links):
 if __name__ == '__main__':
     links = get_courses_list()
     filepath = input('Enter filepath to directory: \n')
+    print('Parsing has been started')
     output_courses_info_to_xlsx(filepath, links)
     print('Done!')
 
