@@ -4,8 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from os.path import join
-from random import shuffle
-
+from random import sample
 
 COURSES_XML_URL = 'https://www.coursera.org/sitemap~www~courses.xml'
 QUANTITY_COURSES_TO_OUTPUT = 20
@@ -15,15 +14,15 @@ def get_courses_list():
     xml_page = requests.get(COURSES_XML_URL)
     root = etree.fromstring(xml_page.content)
     links = [link.text for link in root.iter('{*}loc')]
-    shuffle(links)
+    links = sample(links, 20)
     return links[:QUANTITY_COURSES_TO_OUTPUT]
 
 
 def get_average_score_of_course(soup):
     try:
         score = soup.find('div', {'class': 'ratings-text bt3-visible-xs'}).text
-    except:
-        score = 'not represented'
+    except AttributeError:
+        score = None
     return score
 
 
@@ -31,8 +30,8 @@ def get_datetime_course(soup):
     try:
         json_course = soup.find('script', {'type': 'application/ld+json'}).text
         datetime = json.loads(json_course)['hasCourseInstance'][0]['startDate']
-    except:
-        datetime = 'not represented'
+    except AttributeError or KeyError:
+        datetime = None
     return datetime
 
 
@@ -47,7 +46,7 @@ def get_course_info(course_url):
     return (course_name, course_lang, course_date, duration, average_score)
 
 
-def output_courses_info_to_xlsx(filepath, links):
+def output_courses_info_to_xlsx(filepath, courses_info):
     wb = Workbook()
     sheet = wb.active
     sheet.cell(row=1, column=1).value = 'Name of course'
@@ -55,8 +54,7 @@ def output_courses_info_to_xlsx(filepath, links):
     sheet.cell(row=1, column=3).value = 'Date of start'
     sheet.cell(row=1, column=4).value = 'Duration'
     sheet.cell(row=1, column=5).value = 'Average score(out of 5)'
-    for number, link in enumerate(links):
-        info_about_course = get_course_info(link)
+    for number, info_about_course in enumerate(courses_info):
         sheet.cell(row=number+2, column=1).value = info_about_course[0]
         sheet.cell(row=number+2, column=2).value = info_about_course[1]
         sheet.cell(row=number+2, column=3).value = info_about_course[2]
@@ -68,7 +66,9 @@ def output_courses_info_to_xlsx(filepath, links):
 if __name__ == '__main__':
     links = get_courses_list()
     filepath = input('Enter filepath to directory: \n')
+    courses_info = []
     print('Parsing has been started')
-    output_courses_info_to_xlsx(filepath, links)
+    for link in links:
+        courses_info.append(get_course_info(link))
+    output_courses_info_to_xlsx(filepath, courses_info)
     print('Done!')
-
