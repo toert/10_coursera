@@ -14,7 +14,7 @@ def get_courses_list():
     xml_page = requests.get(COURSES_XML_URL)
     root = etree.fromstring(xml_page.content)
     links = [link.text for link in root.iter('{*}loc')]
-    links = sample(links, 20)
+    links = sample(links, QUANTITY_COURSES_TO_OUTPUT)
     return links[:QUANTITY_COURSES_TO_OUTPUT]
 
 
@@ -30,7 +30,9 @@ def get_datetime_course(soup):
     try:
         json_course = soup.find('script', {'type': 'application/ld+json'}).text
         datetime = json.loads(json_course)['hasCourseInstance'][0]['startDate']
-    except AttributeError or KeyError:
+    except AttributeError:
+        datetime = None
+    except KeyError:
         datetime = None
     return datetime
 
@@ -68,7 +70,6 @@ if __name__ == '__main__':
     filepath = input('Enter filepath to directory: \n')
     courses_info = []
     print('Parsing has been started')
-    for link in links:
-        courses_info.append(get_course_info(link))
+    courses_info = [get_course_info(link) for link in links ]
     output_courses_info_to_xlsx(filepath, courses_info)
     print('Done!')
