@@ -10,6 +10,10 @@ COURSES_XML_URL = 'https://www.coursera.org/sitemap~www~courses.xml'
 QUANTITY_COURSES_TO_OUTPUT = 20
 
 
+def text(tag):
+    return tag.text if tag else None
+
+
 def get_courses_list():
     xml_page = requests.get(COURSES_XML_URL)
     root = etree.fromstring(xml_page.content)
@@ -19,10 +23,7 @@ def get_courses_list():
 
 
 def get_average_score_of_course(soup):
-    try:
-        score = soup.find('div', {'class': 'ratings-text bt3-visible-xs'}).text
-    except AttributeError:
-        score = None
+    score = text(soup.find('div', {'class': 'ratings-text bt3-visible-xs'}))
     return score
 
 
