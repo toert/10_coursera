@@ -10,7 +10,7 @@ COURSES_XML_URL = 'https://www.coursera.org/sitemap~www~courses.xml'
 QUANTITY_COURSES_TO_OUTPUT = 20
 
 
-def text(tag):
+def convert_soup_to_text(tag):
     return tag.text if tag else None
 
 
@@ -23,18 +23,15 @@ def get_courses_list():
 
 
 def get_average_score_of_course(soup):
-    score = text(soup.find('div', {'class': 'ratings-text bt3-visible-xs'}))
+    score = convert_soup_to_text(soup.find('div', {'class': 'ratings-text bt3-visible-xs'}))
     return score
 
 
 def get_datetime_course(soup):
-    try:
-        json_course = soup.find('script', {'type': 'application/ld+json'}).text
+    datetime = None
+    json_course = convert_soup_to_text(soup.find('script', {'type': 'application/ld+json'}))
+    if json_course:
         datetime = json.loads(json_course)['hasCourseInstance'][0]['startDate']
-    except AttributeError:
-        datetime = None
-    except KeyError:
-        datetime = None
     return datetime
 
 
